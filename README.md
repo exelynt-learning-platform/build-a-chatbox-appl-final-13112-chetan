@@ -1,6 +1,6 @@
-# build-a-chatbox-appl-final-13112-chetan
+# Chatbox Application
 
-Final Project Assignment - This repository contains the complete final project code and documentation.
+React and Redux Toolkit chat application with a backend proxy for OpenAI API requests.
 
 ## Stack
 
@@ -10,6 +10,7 @@ Final Project Assignment - This repository contains the complete final project c
 - redux-thunk
 - Tailwind CSS
 - Axios
+- Express
 - Jest
 - React Testing Library
 - Vite
@@ -27,6 +28,8 @@ Final Project Assignment - This repository contains the complete final project c
 ## Project structure
 
 ```text
+server
+  index.ts
 src
   app
     hooks.ts
@@ -54,6 +57,7 @@ src
   App.tsx
   index.css
   main.tsx
+tsconfig.server.json
 ```
 
 ## Environment variables
@@ -61,7 +65,12 @@ src
 Create a `.env` file from `.env.example`.
 
 ```env
-VITE_OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-3.5-turbo
+PORT=8787
+
+VITE_OPENAI_BASE_URL=/api
 VITE_OPENAI_MODEL=gpt-3.5-turbo
 ```
 
@@ -85,16 +94,22 @@ PowerShell:
 Copy-Item .env.example .env
 ```
 
-Start the dev server:
+Start the development environment:
 
 ```bash
 npm run dev
 ```
 
-Build the app:
+Build the frontend:
 
 ```bash
 npm run build
+```
+
+Run the production server after building:
+
+```bash
+npm run start
 ```
 
 Run tests:
@@ -108,19 +123,20 @@ npm test
 - `npm run dev`
 - `npm run build`
 - `npm run preview`
+- `npm run start`
 - `npm run typecheck`
+- `npm run typecheck:server`
 - `npm test`
 - `npm run test:watch`
 
 ## Notes
 
 - The chat state lives in Redux and is persisted with `localStorage`.
-- API requests are handled in `src/services/openai.ts`.
+- Frontend API requests are handled in `src/services/openai.ts`.
+- The backend proxy lives in `server/index.ts`.
 - Async chat actions are handled with thunk in `src/features/chat/chatThunks.ts`.
-- The API key is read from `import.meta.env.VITE_OPENAI_API_KEY`.
+- The browser calls `/api/chat/completions`, and the server uses `OPENAI_API_KEY`.
 
 ## Security
 
-The assignment asks for the API key to be stored in environment variables, and this project does that.
-
-One limitation of a frontend-only app is that `VITE_` variables are still included in the client build. For a real production deployment, the OpenAI request should go through a backend or serverless function instead of calling the API directly from the browser.
+The OpenAI API key is read only on the server from `OPENAI_API_KEY`. The frontend talks to the local `/api` proxy, so the secret is not bundled into client-side code.

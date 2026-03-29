@@ -1,11 +1,11 @@
 import axios from 'axios';
 import type { ChatMessage, OpenAIChatCompletionResponse } from '../types';
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY?.trim();
 export const OPENAI_MODEL = import.meta.env.VITE_OPENAI_MODEL?.trim() || 'gpt-3.5-turbo';
+const OPENAI_PROXY_BASE_URL = import.meta.env.VITE_OPENAI_BASE_URL?.trim() || '/api';
 
 const openAIClient = axios.create({
-  baseURL: 'https://api.openai.com/v1',
+  baseURL: OPENAI_PROXY_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -30,7 +30,7 @@ const getOpenAIErrorMessage = (error: unknown): string => {
 
     switch (error.response.status) {
       case 401:
-        return 'Authentication failed. Verify VITE_OPENAI_API_KEY and try again.';
+        return 'Authentication failed. Verify the server OpenAI configuration and try again.';
       case 429:
         return 'OpenAI is rate limiting requests right now. Please retry in a moment.';
       case 500:
@@ -47,8 +47,8 @@ const getOpenAIErrorMessage = (error: unknown): string => {
 };
 
 export const createChatCompletion = async (messages: ChatMessage[]): Promise<string> => {
-  if (!OPENAI_API_KEY) {
-    throw new Error('Missing OpenAI API key. Add VITE_OPENAI_API_KEY to your .env file.');
+  if (!OPENAI_PROXY_BASE_URL) {
+    throw new Error('Missing chat API base URL. Add VITE_OPENAI_BASE_URL to your .env file.');
   }
 
   try {
@@ -57,11 +57,6 @@ export const createChatCompletion = async (messages: ChatMessage[]): Promise<str
       {
         model: OPENAI_MODEL,
         messages: messages.map(({ role, content }) => ({ role, content })),
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-        },
       },
     );
 
