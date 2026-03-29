@@ -1,6 +1,7 @@
 import type { AppThunk } from '../../app/store';
 import { createChatCompletion } from '../../services/openai';
 import type { ChatMessage } from '../../types';
+import { CHAT_ERROR_MESSAGES } from './chatConstants';
 import { addAIMessage, addUserMessage, setError, setLoading } from './chatSlice';
 
 const buildMessage = (role: ChatMessage['role'], content: string): ChatMessage => ({
@@ -20,7 +21,9 @@ const requestAssistantReply =
       dispatch(addAIMessage(buildMessage('assistant', assistantContent)));
     } catch (error) {
       dispatch(
-        setError(error instanceof Error ? error.message : 'Something went wrong while generating the assistant reply.'),
+        setError(
+          error instanceof Error ? error.message : CHAT_ERROR_MESSAGES.assistantReplyFailed,
+        ),
       );
     } finally {
       dispatch(setLoading(false));
@@ -54,7 +57,7 @@ export const retryLastMessage =
     const lastMessage = messages[messages.length - 1];
 
     if (!lastMessage || lastMessage.role !== 'user') {
-      dispatch(setError('There is no failed user message available to retry.'));
+      dispatch(setError(CHAT_ERROR_MESSAGES.retryUnavailable));
       return;
     }
 
